@@ -4,6 +4,7 @@ services:
   tailscale:
     image: tailscale/tailscale:latest
     hostname: ${NODE_NAME}
+    network_mode: "host"
     environment:
       - TS_AUTHKEY=${TS_AUTHKEY}
       - TS_STATE_DIR=/var/lib/tailscale
@@ -14,21 +15,19 @@ services:
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
-    ports:
-      - "1433:1433"
     restart: unless-stopped
 
-  # SQL Server Container
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    network_mode: "service:tailscale"
+    network_mode: "host"
     depends_on:
       - tailscale
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=${SA_PASSWORD}
       - MSSQL_PID=Developer
-      - MSSQL_NETWORK_RPCPORT=135
+      - MSSQL_TCP_PORT=14333
+      - MSSQL_NETWORK_RPCPORT=13500
       - MSSQL_DISTRIBUTEDTRANSACTION_TURNOFFRPCSECURITY=1
     volumes:
       - sqldata:/var/opt/mssql
